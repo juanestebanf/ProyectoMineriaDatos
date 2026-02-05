@@ -1,1 +1,1 @@
-# ProyectoMineriaDatos
+# proyectoMineriaDatos

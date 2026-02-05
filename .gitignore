@@ -1,0 +1,27 @@
+# ===== MODELO PESADOS =====
+modelo_vit/
+*.safetensors
+*.bin
+*.pt
+*.h5
+*.onnx
+
+# ===== CACHE DE HUGGING FACE =====
+.cache/
+.huggingface/
+
+# ===== STREAMLIT =====
+.streamlit/secrets.toml
+
+# ===== PYTHON =====
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.env
+venv/
+.env/
+
+# ===== SISTEMA =====
+.DS_Store
+Thumbs.db
