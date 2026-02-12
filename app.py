@@ -2,11 +2,13 @@ import streamlit as st
 from transformers import pipeline
 from PIL import Image
 
-# Configuración de la página
-st.set_page_config(page_title="Detector de Lesiones de Piel")
-st.title("Detector de Lesiones de Piel (ViT)")
 
-# Traducción de etiquetas
+st.set_page_config(page_title="Detector de Lesiones de Piel", layout="wide")
+st.title("Detector de Lesiones de Piel con Vision Transformer (ViT)")
+
+# ===============================
+# TRADUCCIONES
+# ===============================
 traduccion = {
     "benign_keratosis-like_lesions": "Queratosis Benigna (tipo verruga / seborreica)",
     "basal_cell_carcinoma": "Carcinoma Basocelular",
@@ -17,36 +19,101 @@ traduccion = {
     "dermatofibroma": "Dermatofibroma"
 }
 
-# Información breve por clase
+# ===============================
+# INFORMACIÓN DE LESIONES
+# ===============================
 info_lesiones = {
-    "benign_keratosis-like_lesions": "Crecimiento benigno común en adultos mayores. Suele ser verrugoso, elevado, marrón o negro. No es canceroso y rara vez requiere tratamiento salvo por estética o irritación.",
-    "basal_cell_carcinoma": "El cáncer de piel más frecuente. Crece lentamente, casi nunca hace metástasis. Suele aparecer como nódulo brillante, perlado o úlcera que no cicatriza. Tratamiento temprano suele ser curativo.",
-    "actinic_keratoses": "Lesión precancerosa por daño solar acumulado. Manchas ásperas, escamosas, rosadas o rojizas. Sin tratamiento, un pequeño porcentaje puede evolucionar a cáncer escamoso.",
-    "vascular_lesions": "Generalmente benignas (ej. hemangiomas). Pueden ser manchas rojas o violáceas. Rara vez malignas.",
-    "melanocytic_Nevi": "Lunar común. Generalmente benigno. Vigilar cambios según la regla ABCDE.",
-    "melanoma": "Cáncer de piel agresivo. Puede hacer metástasis. La detección temprana es clave.",
-    "dermatofibroma": "Nódulo benigno firme, usualmente marrón. No es canceroso."
+    "benign_keratosis-like_lesions": "Crecimiento benigno común en adultos mayores. No es canceroso.",
+    "basal_cell_carcinoma": "El cáncer de piel más frecuente. Crece lentamente y suele ser tratable.",
+    "actinic_keratoses": "Lesión precancerosa causada por daño solar acumulado.",
+    "vascular_lesions": "Generalmente benignas. Suelen ser manchas rojizas o violáceas.",
+    "melanocytic_Nevi": "Lunar común. Generalmente benigno.",
+    "melanoma": "Cáncer de piel agresivo. La detección temprana es clave.",
+    "dermatofibroma": "Nódulo benigno firme, no canceroso."
 }
 
 # ===============================
-# CARGA DEL MODELO DESDE HUGGING FACE
+# INFORMACIÓN DE USO
+# ===============================
+st.markdown("## Uso exclusivo para lesiones cutáneas humanas")
+
+st.info("""
+Este modelo fue entrenado exclusivamente con imágenes clínicas de lesiones dermatológicas humanas.
+
+ Solo se deben subir fotografías donde:
+- Se observe claramente una lesión en piel humana
+- La imagen esté enfocada en la lesión
+- No existan objetos externos dominantes
+
+ No subir:
+- Animales
+- Objetos
+- Paisajes
+- Fotografías sin lesión visible
+
+El sistema no es un clasificador universal.
+""")
+
+# ===============================
+# CLASES QUE DETECTA
+# ===============================
+st.markdown("### Clases que el modelo puede identificar:")
+
+for clase in traduccion.values():
+    st.write(f"- {clase}")
+
+# ===============================
+# EJEMPLOS VISUALES
+# ===============================
+st.markdown("### Ejemplos de imágenes válidas")
+
+col1, col2, col3, col4, col5= st.columns(5)
+
+with col1:
+    st.image("ejemplosFotos/melanoma1.webp", caption="Melanoma", use_container_width=True)
+
+with col2:
+    st.image("ejemplosFotos/lunarcomunn.png", caption="Nevus Melanocítico", use_container_width=True)
+
+with col3:
+    st.image("ejemplosFotos/carcinoma.png", caption="Carcinoma Basocelular", use_container_width=True)
+
+with col4:
+    st.image("ejemplosFotos/Queratoss.jpeg", caption="Queratosis Actínica", use_container_width=True)
+
+with col5:
+    st.image("ejemplosFotos/dermatofbroma.png", caption="Dermatofibroma", use_container_width=True)
+
+
+st.divider()
+
+# ===============================
+# CARGA DEL MODELO (HF)
 # ===============================
 @st.cache_resource
 def load_vit_model():
     return pipeline(
         "image-classification",
-        model="Anwarkh1/Skin_Cancer-Image_Classification"
+        model="Fuentesjes/SkinCancer-ViT",
+        device=-1 
     )
 
 classifier = load_vit_model()
 
-# Subir imagen
+# ===============================
+# SUBIDA DE IMAGEN
+# ===============================
+st.markdown("## Analizar nueva imagen")
+
 uploaded_file = st.file_uploader(
     "Sube la imagen de la lesión...",
-    type=["jpg", "jpeg", "png", "webp"]
+    type=["jpg", "jpeg", "png"]
 )
 
 if uploaded_file is not None and classifier is not None:
+
+    st.warning("Asegúrese de que la imagen corresponda a una lesión cutánea humana.")
+
     img = Image.open(uploaded_file)
 
     col1, col2 = st.columns([1, 1])
@@ -55,7 +122,7 @@ if uploaded_file is not None and classifier is not None:
         st.image(img, caption="Imagen subida", use_container_width=True)
 
     with col2:
-        with st.spinner("Analizando la imagen, espere..."):
+        with st.spinner("Analizando la imagen..."):
             results = classifier(img)
 
         st.subheader("Resultados del análisis:")
@@ -69,7 +136,7 @@ if uploaded_file is not None and classifier is not None:
 
             if i == 0:
                 st.success(
-                    f"**Predicción principal: {label_espanol}** "
+                    f"Predicción principal: {label_espanol} "
                     f"({round(score * 100, 1)}% de confianza)"
                 )
 
@@ -80,8 +147,8 @@ if uploaded_file is not None and classifier is not None:
                 st.info(descripcion)
 
                 st.markdown(
-                    "**Atención:** Este resultado es solo una predicción del modelo. "
-                    "**NO es un diagnóstico médico**."
+                    "**Nota:** Este resultado es solo una predicción del modelo. "
+                    "**NO constituye un diagnóstico médico.**"
                 )
             else:
                 st.write(f"{label_espanol} — {round(score * 100, 1)}%")
@@ -89,17 +156,17 @@ if uploaded_file is not None and classifier is not None:
 
             st.write("---")
 
-# Advertencia final
+# ===============================
+# ADVERTENCIA FINAL
+# ===============================
 st.divider()
 
 st.warning("""
-**IMPORTANTE – LEE ESTO CON ATENCIÓN**  
+IMPORTANTE  
 Este es un prototipo educativo basado en inteligencia artificial y minería de datos.  
-**NO sustituye la opinión de un médico especialista**.
+NO sustituye la evaluación de un médico especialista.
 
-- Ante resultados preocupantes, acude a un dermatólogo.
-- No tomes decisiones médicas basándote solo en esta herramienta.
-- El sistema puede cometer errores.
+Ante cualquier cambio en una lesión, consulte a un dermatólogo.
 """)
 
-st.caption("Modelo basado en Vision Transformer (ViT)")
+st.caption("Modelo basado en Vision Transformer (ViT) - Autoría propia")
