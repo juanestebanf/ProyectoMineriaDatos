@@ -4,7 +4,7 @@ from PIL import Image
 
 st.set_page_config(page_title="Detector de Lesiones de Piel", layout="wide")
 
-st.title("Detector de Lesiones de Piel con Vision Transformer (ViT)")
+st.title("Detector de Lesiones de Piel (ViT)")
 
 st.markdown(
     "<hr style='margin-top:10px;margin-bottom:30px;'>",
@@ -59,7 +59,7 @@ Este modelo fue entrenado exclusivamente con imágenes clínicas de lesiones der
 - Animales | Objetos  
 - Paisajes | Fotografías sin lesión clara 
 
-El sistema no es un clasificador universal.
+**El sistema no es un clasificador universal.**
 """)
 
 st.markdown(
