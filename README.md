@@ -19,8 +19,6 @@ El modelo fue entrenado con imágenes clínicas del dataset HAM10000 y puede cla
 - Nevus Melanocítico (lunar común)
 - Carcinoma Basocelular
 - Queratosis Actínica
-- Lesiones Vasculares
-- Queratosis Benigna
 - Dermatofibroma
 
 ---
