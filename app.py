@@ -2,9 +2,14 @@ import streamlit as st
 from transformers import pipeline
 from PIL import Image
 
-
 st.set_page_config(page_title="Detector de Lesiones de Piel", layout="wide")
+
 st.title("Detector de Lesiones de Piel con Vision Transformer (ViT)")
+
+st.markdown(
+    "<hr style='margin-top:10px;margin-bottom:30px;'>",
+    unsafe_allow_html=True
+)
 
 # ===============================
 # TRADUCCIONES
@@ -33,69 +38,76 @@ info_lesiones = {
 }
 
 # ===============================
-# INFORMACIÓN DE USO
+# COLUMNAS SUPERIORES
 # ===============================
-st.markdown("## Uso exclusivo para lesiones cutáneas humanas")
+col_left, col_right = st.columns(2)
 
-st.info("""
+with col_left:
+    st.markdown("### Clases que el modelo puede identificar:")
+    for clase in traduccion.values():
+        st.markdown(f"- {clase}")
+
+with col_right:
+    st.markdown("### Uso exclusivo para lesiones cutáneas humanas")
+    st.info("""
 Este modelo fue entrenado exclusivamente con imágenes clínicas de lesiones dermatológicas humanas.
 
- Solo se deben subir fotografías donde:
-- Se observe claramente una lesión en piel humana
-- La imagen esté enfocada en la lesión
-- No existan objetos externos dominantes
+**Solo se deben subir fotografías donde:**
+- Se observe claramente una lesión en piel humana. La imagen esté enfocada en la lesión. No existan objetos externos dominantes  
 
- No subir:
-- Animales
-- Objetos
-- Paisajes
-- Fotografías sin lesión visible
+**No subir:**
+- Animales | Objetos  
+- Paisajes | Fotografías sin lesión clara 
 
 El sistema no es un clasificador universal.
 """)
 
-# ===============================
-# CLASES QUE DETECTA
-# ===============================
-st.markdown("### Clases que el modelo puede identificar:")
-
-for clase in traduccion.values():
-    st.write(f"- {clase}")
+st.markdown(
+    "<hr style='margin-top:20px;margin-bottom:30px;'>",
+    unsafe_allow_html=True
+)
 
 # ===============================
 # EJEMPLOS VISUALES
 # ===============================
 st.markdown("### Ejemplos de imágenes válidas")
 
-col1, col2, col3, col4, col5= st.columns(5)
+def cargar_y_redimensionar(ruta, size=(250, 250)):
+    img = Image.open(ruta)
+    img = img.resize(size)
+    return img
+
+col1, col2, col3, col4, col5 = st.columns(5)
 
 with col1:
-    st.image("ejemplosFotos/melanoma1.webp", caption="Melanoma", use_container_width=True)
+    st.image(cargar_y_redimensionar("ejemplosFotos/melanoma1.webp"), caption="Melanoma")
 
 with col2:
-    st.image("ejemplosFotos/lunarcomunn.png", caption="Nevus Melanocítico", use_container_width=True)
+    st.image(cargar_y_redimensionar("ejemplosFotos/lunarcomunn.png"), caption="Nevus Melanocítico")
 
 with col3:
-    st.image("ejemplosFotos/carcinoma.png", caption="Carcinoma Basocelular", use_container_width=True)
+    st.image(cargar_y_redimensionar("ejemplosFotos/carcinoma.png"), caption="Carcinoma Basocelular")
 
 with col4:
-    st.image("ejemplosFotos/Queratoss.jpeg", caption="Queratosis Actínica", use_container_width=True)
+    st.image(cargar_y_redimensionar("ejemplosFotos/Queratoss.jpeg"), caption="Queratosis Actínica")
 
 with col5:
-    st.image("ejemplosFotos/dermatofbroma.png", caption="Dermatofibroma", use_container_width=True)
+    st.image(cargar_y_redimensionar("ejemplosFotos/dermatofbroma.png"), caption="Dermatofibroma")
 
-
-st.divider()
+st.markdown(
+    "<hr style='margin-top:30px;margin-bottom:30px;'>",
+    unsafe_allow_html=True
+)
 
 # ===============================
-# CARGA DEL MODELO (HF)
+# CARGA DEL MODELO
 # ===============================
 @st.cache_resource
 def load_vit_model():
     return pipeline(
         "image-classification",
         model="Fuentesjes/SkinCancer-ViT",
-        device=-1 
+        device=-1
     )
 
 classifier = load_vit_model()
@@ -159,7 +171,10 @@ if uploaded_file is not None and classifier is not None:
 # ===============================
 # ADVERTENCIA FINAL
 # ===============================
-st.divider()
+st.markdown(
+    "<hr style='margin-top:30px;margin-bottom:20px;'>",
+    unsafe_allow_html=True
+)
 
 st.warning("""
 IMPORTANTE  
